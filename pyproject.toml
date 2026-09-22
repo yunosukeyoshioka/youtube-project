@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "youtube-automation"
+version = "0.1.0"
+description = "End-to-end automation pipeline for planning, producing, publishing, and improving YouTube videos."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "anthropic>=0.40.0",
+  "click>=8.1",
+  "pyyaml>=6.0",
+  "python-dotenv>=1.0",
+  "requests>=2.31",
+  "Pillow>=10.0",
+  "imageio-ffmpeg>=0.5",
+  "gTTS>=2.5",
+  "google-api-python-client>=2.100",
+  "google-auth-oauthlib>=1.2",
+  "google-auth-httplib2>=0.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.6"]
+
+[project.scripts]
+youtube-automation = "youtube_automation.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

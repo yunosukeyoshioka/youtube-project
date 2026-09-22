@@ -1,0 +1,41 @@
+# Copy this file to config.yaml and adjust it for your channel.
+# Every value here has a sensible default in src/youtube_automation/config.py,
+# so you only need to set what you want to change.
+
+channel:
+  name: "My Automated Channel"
+  niche: "surprising science facts explained simply"
+  audience: "curious adults age 18-35"
+  tone: "energetic, clear, a little dramatic"
+  language: "en"
+  video_length_seconds: 90
+
+providers:
+  # llm: anthropic (only real option) | mock (offline testing)
+  llm: anthropic
+
+  # tts: auto (recommended) | espeak (offline, free) | gtts (free, needs network)
+  #      | elevenlabs (paid, best quality) | silent (captions only, no voice)
+  tts: auto
+
+  # image: local (free, Pillow-rendered) | openai (paid, AI-generated art)
+  image: local
+
+  # research: llm_knowledge (no web access) | tavily (real web search, needs API key)
+  research: llm_knowledge
+
+  # video: ffmpeg (only real option)
+  video: ffmpeg
+
+  # youtube: dry_run (safe default, never uploads) | youtube_api (real upload)
+  youtube: dry_run
+
+# Only used when providers.youtube is youtube_api.
+youtube_client_secrets_file: "data/youtube_client_secret.json"
+youtube_token_file: "data/youtube_token.json"
+
+# private | unlisted | public - only relevant when providers.youtube: youtube_api
+privacy_status: "private"
+
+anthropic_model: "claude-sonnet-5"
+data_dir: "data"

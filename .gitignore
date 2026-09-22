@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Local secrets and OAuth tokens - never commit these
+.env
+data/youtube_client_secret.json
+data/youtube_token.json
+
+# Generated video projects (large binary artifacts)
+data/projects/
+data/knowledge_base.json
