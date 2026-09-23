@@ -94,6 +94,23 @@ class PublishResult:
 
 
 @dataclass
+class ChannelConcept:
+    """A proposed new channel: name, niche, audience, and tone, backed by
+    reasoning about the competitive landscape it was derived from."""
+
+    name: str
+    niche: str
+    audience: str
+    tone: str
+    positioning: str
+    content_pillars: list[str]
+    sample_video_titles: list[str]
+    reasoning: str
+    language: str = "en"
+    video_length_seconds: int = 90
+
+
+@dataclass
 class PerformanceSnapshot:
     video_id: str
     captured_at: str

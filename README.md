@@ -72,7 +72,7 @@ other provider has a free/offline default:
 
 | Stage             | Free default                      | Optional upgrade                          |
 |-------------------|------------------------------------|--------------------------------------------|
-| Research           | LLM's own knowledge (no web access) | Tavily web search (`TAVILY_API_KEY`)       |
+| Research           | LLM's own knowledge (no web access) | Tavily web search (`TAVILY_API_KEY`), or real YouTube data (`YOUTUBE_API_KEY`) |
 | Narration (TTS)    | `espeak-ng` (offline) / gTTS       | ElevenLabs (`ELEVENLABS_API_KEY`)          |
 | Visuals/thumbnail  | Local Pillow renderer              | OpenAI image generation (`OPENAI_API_KEY`) |
 | Publishing         | Dry-run (renders, never uploads)   | Real YouTube upload (OAuth, see below)     |
@@ -104,6 +104,70 @@ youtube-automation analyze
 Each run writes everything to `data/projects/<project_id>/`:
 `project.json` (every stage's structured output + a timestamped log),
 `thumbnail.png`, `scenes/` (per-scene audio + images), and `video.mp4`.
+
+## Running multiple channels
+
+`youtube-automation` isn't tied to a single channel. `config.yaml` is your
+default channel; any number of additional channels live as their own file
+under `channels/<slug>.yaml` (same schema, see `config.example.yaml`) and
+each gets its own `data_dir` — so knowledge bases, past videos, and
+improvement-loop insights never mix across channels.
+
+You don't have to write those files by hand. `discover-channels` analyzes
+the current YouTube landscape and proposes new channel concepts — name,
+niche, audience, tone, and how each one is positioned against what's already
+out there:
+
+```bash
+# Propose 3 channel concepts around an interest area
+youtube-automation discover-channels --interest "personal finance for beginners"
+
+# Same, but also write each one to channels/<slug>.yaml
+youtube-automation discover-channels --interest "cooking for one" --save
+
+# See every configured channel
+youtube-automation channels
+
+# Run a specific channel
+youtube-automation --channel budget-builder create
+youtube-automation --channel budget-builder list
+```
+
+`discover-channels` works with the free LLM-knowledge fallback, but it's
+much more grounded with `providers.research: youtube_data_api` and a
+`YOUTUBE_API_KEY` set (a plain API key from Google Cloud Console with the
+YouTube Data API v3 enabled — no OAuth needed) — that pulls real subscriber
+counts, view counts, and currently popular titles for the interest area
+instead of relying on the LLM's static knowledge.
+
+## Running it from your phone
+
+The CLI itself needs a real machine (ffmpeg, Python, etc.), so it can't run
+directly on a phone. But this repo ships two GitHub Actions workflows with
+`workflow_dispatch` triggers, which the **GitHub mobile app** (or any mobile
+browser) can fire with a couple of taps: **Actions tab → pick the workflow →
+Run workflow**.
+
+- **Create Video** (`.github/workflows/create-video.yml`) — runs the full
+  pipeline with optional `channel`/`niche`/`publish` inputs. The finished
+  `video.mp4` + `thumbnail.png` come back as a downloadable workflow
+  artifact (Actions → the run → Artifacts).
+- **Discover Channels** (`.github/workflows/discover-channels.yml`) — runs
+  `discover-channels --save` and opens a pull request with the proposed
+  `channels/*.yaml` files for you to review and merge, also from your phone.
+
+One-time setup (from a desktop, since GitHub doesn't make entering secrets
+convenient on mobile): add `ANTHROPIC_API_KEY` as a repository secret under
+**Settings → Secrets and variables → Actions**. Add the optional keys
+(`TAVILY_API_KEY`, `ELEVENLABS_API_KEY`, `OPENAI_API_KEY`, `YOUTUBE_API_KEY`)
+the same way if you want the premium providers in CI too. After that,
+triggering runs is phone-only.
+
+To let **Create Video** publish for real from your phone, base64-encode your
+already-authorized `data/youtube_token.json` (see below — you still need to
+do the one-time OAuth consent from a machine with a browser first) and add
+it as the `YOUTUBE_TOKEN_JSON_B64` secret (`base64 -w0 data/youtube_token.json`).
+Without that secret, `publish: true` safely falls back to dry-run.
 
 ## Publishing to YouTube for real
 

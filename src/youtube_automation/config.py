@@ -17,6 +17,7 @@ except ImportError:  # pragma: no cover
     pass
 
 DEFAULT_CONFIG_PATH = Path("config.yaml")
+CHANNELS_DIR = Path("channels")
 
 
 @dataclass
@@ -51,6 +52,7 @@ class AppConfig:
     research_api_key: str | None = None
     image_provider_api_key: str | None = None
     tts_provider_api_key: str | None = None
+    youtube_data_api_key: str | None = None
     raw: dict[str, Any] = field(default_factory=dict)
 
     @property
@@ -116,5 +118,10 @@ def load_config(path: str | Path | None = None) -> AppConfig:
         research_api_key=_get_env("TAVILY_API_KEY", "SERPER_API_KEY"),
         image_provider_api_key=_get_env("OPENAI_API_KEY", "STABILITY_API_KEY"),
         tts_provider_api_key=_get_env("ELEVENLABS_API_KEY", "OPENAI_API_KEY"),
+        youtube_data_api_key=_get_env("YOUTUBE_API_KEY"),
         raw=raw,
     )
+
+
+def channel_config_path(slug: str, channels_dir: Path = CHANNELS_DIR) -> Path:
+    return channels_dir / f"{slug}.yaml"

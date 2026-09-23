@@ -1,0 +1,88 @@
+name: Create Video
+
+# Manual trigger -- tap "Run workflow" from a browser or the GitHub mobile
+# app (Actions tab -> Create Video -> Run workflow) to kick off the full
+# pipeline from your phone. The finished video/thumbnail come back as a
+# downloadable workflow artifact; nothing is committed to the repo.
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: "Channel slug under channels/ (leave blank to use config.yaml)"
+        required: false
+      niche:
+        description: "Override the niche for this run only (leave blank to use the channel's configured niche)"
+        required: false
+      publish:
+        description: "Publish to YouTube for real (needs YOUTUBE_TOKEN_JSON_B64 secret; otherwise always dry-run)"
+        type: boolean
+        default: false
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install espeak-ng
+        run: sudo apt-get update && sudo apt-get install -y espeak-ng
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Restore YouTube OAuth credentials (optional)
+        if: ${{ inputs.publish }}
+        env:
+          YOUTUBE_TOKEN_JSON_B64: ${{ secrets.YOUTUBE_TOKEN_JSON_B64 }}
+          YOUTUBE_CLIENT_SECRET_JSON_B64: ${{ secrets.YOUTUBE_CLIENT_SECRET_JSON_B64 }}
+        run: |
+          mkdir -p data
+          if [ -n "$YOUTUBE_TOKEN_JSON_B64" ]; then
+            echo "$YOUTUBE_TOKEN_JSON_B64" | base64 -d > data/youtube_token.json
+          else
+            echo "::warning::publish=true but YOUTUBE_TOKEN_JSON_B64 secret is not set; falling back to dry-run."
+          fi
+          if [ -n "$YOUTUBE_CLIENT_SECRET_JSON_B64" ]; then
+            echo "$YOUTUBE_CLIENT_SECRET_JSON_B64" | base64 -d > data/youtube_client_secret.json
+          fi
+
+      - name: Create video
+        id: create
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          CHANNEL: ${{ inputs.channel }}
+          NICHE: ${{ inputs.niche }}
+        run: |
+          ARGS=()
+          [ -n "$CHANNEL" ] && ARGS+=(--channel "$CHANNEL")
+          ARGS+=(create)
+          [ -n "$NICHE" ] && ARGS+=(--niche "$NICHE")
+          if [ "${{ inputs.publish }}" = "true" ] && [ -f data/youtube_token.json ]; then
+            ARGS+=(--publish)
+          else
+            ARGS+=(--no-publish)
+          fi
+          youtube-automation "${ARGS[@]}"
+
+      - name: Locate output files
+        id: locate
+        run: |
+          LATEST=$(find data -type f -name project.json -newermt '-10 minutes' | xargs -I{} dirname {} | sort | tail -1)
+          echo "dir=$LATEST" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: video-${{ github.run_id }}
+          path: |
+            ${{ steps.locate.outputs.dir }}/video.mp4
+            ${{ steps.locate.outputs.dir }}/thumbnail.png
+            ${{ steps.locate.outputs.dir }}/project.json
+          if-no-files-found: error

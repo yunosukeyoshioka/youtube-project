@@ -31,6 +31,15 @@ through `pipeline/orchestrator.py::VideoPipeline.create_video()`.
    future Ideation and Marketing prompt via
    `KnowledgeBase.context_for_prompt()`.
 
+A ninth stage sits outside the per-video pipeline, one level up: **Channel
+strategy** (`channel_strategy.py`, exposed as `youtube-automation
+discover-channels`) — queries the research provider for the competitive
+landscape around an interest area, then asks the LLM to propose several
+distinct channel concepts (name, niche, audience, tone, positioning,
+content pillars, sample titles). `storage/channel_config_writer.py` can turn
+any concept straight into a `channels/<slug>.yaml`, ready to run with
+`--channel <slug>`.
+
 ## Providers
 
 Every external capability is behind a small interface in
@@ -43,8 +52,11 @@ touching pipeline code:
   `AnthropicProvider` (default) or `MockLLMProvider` (deterministic, offline,
   used by the test suite).
 - `providers/research` — `ResearchProvider.search(query) -> list[SearchResult]`.
-  `TavilyResearchProvider` or `LLMKnowledgeResearchProvider` (returns no
-  results, so the research stage falls back to the LLM's own knowledge).
+  `TavilyResearchProvider`, `YouTubeDataResearchProvider` (real subscriber/
+  view counts and popular titles via a plain YouTube Data API key -- no
+  OAuth -- used by both the research stage and `discover-channels`), or
+  `LLMKnowledgeResearchProvider` (returns no results, so the caller falls
+  back to the LLM's own knowledge).
 - `providers/tts` — `TTSProvider.synthesize(text, path) -> duration_seconds`.
   `EspeakTTSProvider` (offline), `GoogleTTSProvider` (gTTS, free but needs
   network), `ElevenLabsTTSProvider` (paid, best quality),
@@ -73,6 +85,18 @@ touching pipeline code:
   insights. `context_for_prompt()` renders this into a short text block
   injected into Ideation and Marketing prompts — this is the whole
   "improvement" loop.
+
+## Multi-channel config resolution
+
+`config.py::load_config(path)` reads one YAML file (defaulting to
+`config.yaml`) plus environment variable overrides into an `AppConfig`.
+There's nothing channel-specific about `AppConfig` itself -- multi-channel
+support is just a CLI-level convention: `cli.py::_load_config()` resolves
+`--channel <slug>` to `channels/<slug>.yaml` (via
+`config.channel_config_path()`) before falling back to `--config`/
+`config.yaml`. Each channel config typically points `data_dir` at its own
+`data/channels/<slug>/`, so `ProjectStore` and `KnowledgeBase` -- and
+therefore the improvement loop's insights -- never mix across channels.
 
 ## Adding a new provider
 

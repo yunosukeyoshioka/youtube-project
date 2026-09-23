@@ -86,4 +86,37 @@ class MockLLMProvider(LLMProvider):
                     "Numbered list titles outperformed question titles.",
                 ]
             }
+        if "channel concepts" in prompt.lower():
+            return {
+                "concepts": [
+                    {
+                        "name": "Quick Curiosity",
+                        "niche": "60-second explanations of surprising science facts",
+                        "audience": "curious teens and young adults",
+                        "tone": "fast-paced, playful",
+                        "positioning": "shorter and more visual than existing explainer channels",
+                        "content_pillars": ["myth busting", "weird history", "how it works"],
+                        "sample_video_titles": [
+                            "Why the Sky Isn't Actually Blue",
+                            "The Habit That's Secretly Wasting Your Time",
+                        ],
+                        "reasoning": "Existing channels in this space skew long-form; a short-form "
+                        "angle fills an underserved gap.",
+                    },
+                    {
+                        "name": "Budget Builder",
+                        "niche": "practical personal finance for beginners",
+                        "audience": "young professionals starting to save",
+                        "tone": "calm, encouraging, no jargon",
+                        "positioning": "beginner-first instead of assuming financial literacy",
+                        "content_pillars": ["budgeting basics", "first investments", "debt payoff"],
+                        "sample_video_titles": [
+                            "The Simplest Budget That Actually Works",
+                            "5 Habits Secretly Wasting Your Time (and Money)",
+                        ],
+                        "reasoning": "Most finance channels target intermediate viewers, leaving "
+                        "true beginners underserved.",
+                    },
+                ]
+            }
         return {}
