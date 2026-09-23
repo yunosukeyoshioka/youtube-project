@@ -8,8 +8,9 @@ dist/
 .venv/
 venv/
 
-# Local secrets and OAuth tokens - never commit these
+# Local per-user config - copied from the .example templates, never commit these
 .env
+config.yaml
 data/youtube_client_secret.json
 data/youtube_token.json
 
