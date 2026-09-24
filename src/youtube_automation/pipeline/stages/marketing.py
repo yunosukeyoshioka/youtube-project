@@ -42,7 +42,7 @@ Respond as JSON: {{"title_options": ["..."], "chosen_title": "...",
 "description": "...", "tags": ["..."], "hashtags": ["..."],
 "thumbnail_concepts": ["..."]}}"""
 
-        response = self._llm.generate_json(SYSTEM_PROMPT, prompt, max_tokens=1500)
+        response = self._llm.generate_json(SYSTEM_PROMPT, prompt, max_tokens=4000)
         project.marketing = MarketingPackage(
             title_options=list(response.get("title_options", [project.script.title])),
             chosen_title=response.get("chosen_title", project.script.title),

@@ -64,7 +64,7 @@ title styles, tags, or angles correlate with higher views for this channel.
 
 Respond as JSON: {{"insights": ["..."]}}"""
 
-        response = self._llm.generate_json(SYSTEM_PROMPT, prompt, max_tokens=800)
+        response = self._llm.generate_json(SYSTEM_PROMPT, prompt, max_tokens=3000)
         insights = list(response.get("insights", []))
         if insights:
             self._kb.add_insights(insights)

@@ -41,13 +41,16 @@ class AnthropicProvider(LLMProvider):
         self._client = anthropic.Anthropic(api_key=api_key)
         self._model = model
 
-    def complete(self, system: str, prompt: str, max_tokens: int = 2000) -> str:
-        response = self._client.messages.create(
+    def _create(self, system: str, prompt: str, max_tokens: int):
+        return self._client.messages.create(
             model=self._model,
             max_tokens=max_tokens,
             system=system,
             messages=[{"role": "user", "content": prompt}],
         )
+
+    def complete(self, system: str, prompt: str, max_tokens: int = 2000) -> str:
+        response = self._create(system, prompt, max_tokens)
         return "".join(
             block.text for block in response.content if block.type == "text"
         )
@@ -60,5 +63,15 @@ class AnthropicProvider(LLMProvider):
             "Respond with a single valid JSON object only. No prose, no markdown "
             "code fences, no explanation before or after the JSON."
         )
-        text = self.complete(json_system, prompt, max_tokens=max_tokens)
+        # claude-sonnet-5 (and other current models) think by default, which
+        # eats into max_tokens before any output is written. If the response
+        # gets cut off mid-JSON, retry once with a much larger budget instead
+        # of failing outright.
+        response = self._create(json_system, prompt, max_tokens)
+        text = "".join(block.text for block in response.content if block.type == "text")
+        if response.stop_reason == "max_tokens":
+            response = self._create(json_system, prompt, max_tokens * 3)
+            text = "".join(
+                block.text for block in response.content if block.type == "text"
+            )
         return extract_json(text)

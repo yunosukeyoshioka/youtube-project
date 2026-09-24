@@ -44,7 +44,7 @@ Respond as JSON: {{"ideas": [{{"title": "...", "hook": "...", "angle": "...",
 "target_audience": "...", "reasoning": "...", "virality_score": 0.0,
 "tags": ["..."]}}]}}"""
 
-        response = self._llm.generate_json(SYSTEM_PROMPT, prompt, max_tokens=2000)
+        response = self._llm.generate_json(SYSTEM_PROMPT, prompt, max_tokens=4000)
         ideas_raw = response.get("ideas", [])
         if not ideas_raw:
             raise RuntimeError("Ideation stage received no ideas from the LLM provider.")

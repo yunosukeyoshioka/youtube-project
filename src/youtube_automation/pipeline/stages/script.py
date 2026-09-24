@@ -46,7 +46,7 @@ Respond as JSON: {{"hook_line": "...", "scenes": [{{"narration": "...",
 "visual_direction": "...", "on_screen_text": "...",
 "duration_hint_seconds": 0}}], "call_to_action": "..."}}"""
 
-        response = self._llm.generate_json(SYSTEM_PROMPT, prompt, max_tokens=3000)
+        response = self._llm.generate_json(SYSTEM_PROMPT, prompt, max_tokens=6000)
         scenes = [
             ScriptScene(
                 index=i,

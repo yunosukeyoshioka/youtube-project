@@ -62,7 +62,7 @@ Respond as JSON: {{"concepts": [{{"name": "...", "niche": "...",
 "content_pillars": ["..."], "sample_video_titles": ["..."],
 "reasoning": "..."}}]}}"""
 
-        response = self._llm.generate_json(SYSTEM_PROMPT, prompt, max_tokens=3000)
+        response = self._llm.generate_json(SYSTEM_PROMPT, prompt, max_tokens=6000)
         concepts_raw = response.get("concepts", [])
         if not concepts_raw:
             raise RuntimeError("Channel strategy stage received no concepts from the LLM provider.")

@@ -40,7 +40,7 @@ Available sources:
 Respond as JSON: {{"summary": "...", "key_points": ["..."], "sources":
 ["..."], "open_questions": ["..."]}}"""
 
-        response = self._llm.generate_json(SYSTEM_PROMPT, prompt, max_tokens=1500)
+        response = self._llm.generate_json(SYSTEM_PROMPT, prompt, max_tokens=4000)
         project.research = ResearchBrief(
             summary=response.get("summary", ""),
             key_points=list(response.get("key_points", [])),
